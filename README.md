@@ -1,7 +1,8 @@
 ## Description
 Backend for price comparator application. 
 
-Original idea: David Saleh 
+Original idea: David Saleh.
+
 Developed by: Josep Ramon
 
 
