@@ -3,15 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
 
-import { Product } from './product.schema';
+import Product from './product.schema';
 
 @Injectable()
 export class ProductService {
   constructor(@InjectModel('Product') private productModel: Model<Product>) { }
 
-  async create(product: Product): Promise<Product> {
-    const createdProduct = new this.productModel(product);
-    return createdProduct.save();
+  async save(product: Product): Promise<Product> {
+    const savedProduct = new this.productModel(product);
+    return savedProduct.save();
   }
 
   async findAll(): Promise<Product[]> {

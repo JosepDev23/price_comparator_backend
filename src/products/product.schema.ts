@@ -1,24 +1,26 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 
 export type ProductDocument = Product & Document;
 
 @Schema()
-export class Product {
+export default class Product {
 
   @Prop()
-  id: string;
-
-  @Prop()
+  @ApiProperty()
   name: string;
 
   @Prop()
+  @ApiProperty()
   description: string;
 
   @Prop()
+  @ApiProperty()
   price: number;
 
   @Prop()
+  @ApiProperty()
   img: string;
 }
 

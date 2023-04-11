@@ -1,20 +1,24 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { Product } from './product.schema';
-import { ApiTags } from '@nestjs/swagger';
+import Product from './product.schema';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Products')
+@ApiTags('products')
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
-
-  @Post()
-  async create(@Body() product: Product): Promise<Product> {
-    return this.productService.create(product);
-  }
+  constructor(private readonly productService: ProductService) { }
 
   @Get()
-  async findAll(): Promise<Product[]> {
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({ status: 200, type: [Product] })
+  async getProducts(): Promise<Product[]> {
     return this.productService.findAll();
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new product' })
+  @ApiResponse({ status: 201, type: Product})
+  async postProduct(@Body() product: Product): Promise<Product> {
+    return this.productService.save(product);
   }
 }
