@@ -17,8 +17,16 @@ export class ProductController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, type: Product})
+  @ApiResponse({ status: 201, type: Product })
   async postProduct(@Body() product: Product): Promise<Product> {
     return this.productService.save(product);
   }
+
+  @Post('populate')
+  @ApiOperation({ summary: 'Populate database' })
+  @ApiResponse({ status: 201 })
+  async populateDataBase(): Promise<void> {
+    return this.scrappeoChido();
+  }
+  async scrappeoChido(): Promise<void> { }
 }
