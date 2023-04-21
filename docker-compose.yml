@@ -1,15 +1,14 @@
 version: '3'
 
-
 services:
     mongo:
         image: mongo
         container_name: mongo
-        restart: always
+        restart: unless-stopped
         ports:
             - "27017:27017"
         volumes: 
-            - ./data:/data/db
+            - ./data:/data/
         networks:
             - mongo-network
 
@@ -30,6 +29,7 @@ services:
             - mongo
         networks:
             - mongo-network
+        restart: unless-stopped
 
 networks:
     mongo-network:
