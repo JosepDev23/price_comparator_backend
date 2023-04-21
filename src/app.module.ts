@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProductModule } from './products/product.module';
 import { SwaggerModule } from '@nestjs/swagger';
 import { ScraperModule } from './scraper/scraper.module';
+import { ScraperController } from './scraper/scraper.controller';
 
 
 @Module({
@@ -12,6 +13,7 @@ import { ScraperModule } from './scraper/scraper.module';
     SwaggerModule,
     ProductModule,
     ScraperModule
-  ]
+  ],
+  controllers: [ScraperController]
 })
 export class AppModule { }
