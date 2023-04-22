@@ -14,8 +14,9 @@ export class ProductService {
     return savedProduct.save();
   }
 
-  async findAll(limit: number, offset: number): Promise<Product[]> {
-    return this.productModel.find().limit(limit).skip(offset).exec();
+  async findAll(name: string, limit: number, offset: number): Promise<Product[]> {
+    const filter = { name: new RegExp(name, 'i') };
+    return this.productModel.find(filter).limit(limit).skip(offset).exec();
   }
 
   async deleteAll(): Promise<{ deletedCount?: number }> {
