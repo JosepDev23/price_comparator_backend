@@ -11,6 +11,6 @@ export class ScraperController {
   @ApiOperation({ summary: 'Populate database' })
   @ApiResponse({ status: 201 })
   async populateDatabase(): Promise<void> {
-    return this.scraperService.getMercadonaProducts();
+    return this.scraperService.postMercadonaProducts();
   }
 }
