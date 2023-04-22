@@ -14,8 +14,12 @@ export class ProductService {
     return savedProduct.save();
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+  async findAll(limit: number, offset: number): Promise<Product[]> {
+    return this.productModel.find().limit(limit).skip(offset).exec();
+  }
+
+  async deleteAll(): Promise<{ deletedCount?: number }> {
+    return this.productModel.deleteMany().exec();
   }
 
 }

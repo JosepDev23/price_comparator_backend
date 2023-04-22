@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import Product from './product.schema';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DeleteResultDto } from 'src/delete-result-dto';
 
 @ApiTags('products')
 @Controller('product')
@@ -10,15 +11,27 @@ export class ProductController {
 
   @Get()
   @ApiOperation({ summary: 'Get all products' })
-  @ApiResponse({ status: 200, type: [Product] })
-  async getProducts(): Promise<Product[]> {
-    return this.productService.findAll();
+  @ApiResponse({ status: 200, description: 'Products list', type: [Product] })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Products limit by page' })
+  @ApiQuery({ name: 'offset', required: false, type: Number, description: 'Initial index for pagination' })
+  async getProducts(
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number
+  ): Promise<Product[]> {
+    return this.productService.findAll(limit, offset);
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, type: Product})
+  @ApiResponse({ status: 201, description: 'Product created successfully', type: Product})
   async postProduct(@Body() product: Product): Promise<Product> {
     return this.productService.save(product);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Deletes all products'})
+  @ApiResponse({status: 200, description: 'Number of deleted products', type: DeleteResultDto})
+  async deleteAllProducts(): Promise<{ deletedCount?: number }> {
+    return this.productService.deleteAll();
   }
 }
