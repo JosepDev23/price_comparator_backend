@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
+import { SwaggerModule } from '@nestjs/swagger';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { ProductModule } from './products/product.module';
-import { SwaggerModule } from '@nestjs/swagger';
 import { ScraperModule } from './scraper/scraper.module';
-
 
 @Module({
   imports: [
@@ -12,6 +11,6 @@ import { ScraperModule } from './scraper/scraper.module';
     SwaggerModule,
     ProductModule,
     ScraperModule
-  ]
+  ],
 })
 export class AppModule { }
