@@ -15,12 +15,14 @@ export class ProductController {
   @ApiQuery({ name: 'name', required: false, type: String, description: 'Product name for filtering' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Products limit by page' })
   @ApiQuery({ name: 'offset', required: false, type: Number, description: 'Initial index for pagination' })
+  @ApiQuery({ name: 'order', required: false, type: String, description: 'Price order (asc or desc)' })
   async getProducts(
     @Query('name') name?: string,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
+    @Query('order') order?: string
   ): Promise<Product[]> {
-    return this.productService.findAll(name, limit, offset);
+    return this.productService.findAll(name, limit, offset, order);
   }
 
   @Post()
