@@ -10,7 +10,14 @@ export class ScraperController {
   @Post('/mercadona')
   @ApiOperation({ summary: 'Populate database with Mercadona' })
   @ApiResponse({ status: 201 })
-  async populateDatabase(): Promise<void> {
+  async populateDatabaseMercadona(): Promise<void> {
     return this.scraperService.postMercadonaProducts();
+  }
+  
+  @Post('/consum')
+  @ApiOperation({ summary: 'Populate database with Consum' })
+  @ApiResponse({ status: 201 })
+  async populateDatabaseConsum(): Promise<void> {
+    return this.scraperService.postConsumProducts();
   }
 }
