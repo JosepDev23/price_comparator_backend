@@ -11,7 +11,7 @@ import { ConsumCategory, ConsumCategoryProductList, ID, ProductDataConsum } from
 export class ScraperService {
     constructor(private readonly productService: ProductService) { }
 
-    async getMercadonaProducts(): Promise<void> {
+    async postMercadonaProducts(): Promise<void> {
         const mercadonaCategoryList: Category[] = [];
         const mercadonaProductList: Product[] = [];
 
@@ -27,7 +27,7 @@ export class ScraperService {
 
         // Get All the info about all categories
         const categoriesPromise: Array<Promise<CategoryData>> = mercadonaCategoryList.map(async (category: Category) => {
-            return axios.get(`https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`);
+            return (await axios.get(`https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`)).data;
         });
 
         const categories: CategoryData[] = await Promise.all(categoriesPromise);
@@ -37,18 +37,18 @@ export class ScraperService {
             data.categories?.forEach((subCategory: CategoryData) => {
                 subCategory.products?.forEach((productData: ProductDataMercadona) => {
                     const product = new Product();
-                        product.name = productData.display_name;
-                        product.price = productData.price_instructions.unit_price;
-                        product.img = productData.thumbnail,
-                        product.description = "";
+                    product.name = productData.display_name;
+                    product.price = productData.price_instructions.unit_price;
+                    product.img = productData.thumbnail;
+                    product.description = "";
                     mercadonaProductList.push(product);
                 });
             });
         });
 
-        mercadonaProductList.forEach(product => {
+        await Promise.all(mercadonaProductList.map(async (product) => {
             this.productService.save(product)
-        })
+        }))
     }
 
     async postConsumProducts(): Promise<void> {

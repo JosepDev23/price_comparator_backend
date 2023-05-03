@@ -14,8 +14,14 @@ export class ProductService {
     return savedProduct.save();
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+  async findAll(name: string, limit: number, offset: number, priceOrder: string): Promise<Product[]> {
+    const filter = { name: new RegExp(name, 'i') };
+    const sortPriceOrder = priceOrder === 'desc' ? -1 : 1;
+    return this.productModel.find(filter).sort({ price: sortPriceOrder }).limit(limit).skip(offset).exec();
+  }
+
+  async deleteAll(): Promise<{ deletedCount?: number }> {
+    return this.productModel.deleteMany().exec();
   }
 
 }
