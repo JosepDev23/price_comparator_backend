@@ -54,51 +54,45 @@ export class ScraperService {
 
     async postConsumProducts(): Promise<void> {
         try {
-            const consumCategoryList: ConsumCategory[] = [];
-        let consumProductList: ProductDataConsum[] = [];
+            const consumProductList: ProductDataConsum[] = [];
+            const productList: ConsumCategoryProductList[] = [];
+            const consumCategoryList: ConsumCategory[] = (await axios.get('https://tienda.consum.es/api/rest/V1.0/shopping/category/menu')).data;
 
-        const categoriesData: ConsumCategory[] = (await axios.get('https://tienda.consum.es/api/rest/V1.0/shopping/category/menu')).data;
-        categoriesData.forEach(category => {
-            fillCategoryList(category);
-        });
+            for (const category of consumCategoryList) {
+                let count = 0;
+                let promise: ConsumCategoryProductList = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${category.id}&offset=${count}&limit=100`)).data
+                productList.push(promise);
 
-        function fillCategoryList(category: ConsumCategory): void {
-            if (category.subcategories.length !== 0) {
-                category.subcategories.forEach(subCategory => {
-                    fillCategoryList(subCategory);
-                })
-            } else {
-                consumCategoryList.push({ id: category.id, nombre: category.nombre, subcategories: [] });
+                while (promise.hasMore) {
+                    count += 100;
+                    promise = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${category.id}&offset=${count}&limit=100`)).data;
+                    productList.push(promise);
+                }
             }
-        }
 
-        async function getAllProducts(productList: ConsumCategoryProductList, count: number, categoryId: number): Promise<void> {
-            if (!productList.hasMore) return;
-            consumProductList = [...consumProductList, ...productList.products];
-            count = count + 100;
-            const pageData: ConsumCategoryProductList = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${categoryId}&offset=${count}&limit=100`)).data
-            console.log('pagedata', pageData.totalCount)
-            await getAllProducts(pageData, count, categoryId);
-        }
+            productList.forEach(list => {
+                list.products.forEach(product => {
+                    consumProductList.push({
+                        id: product.id,
+                        media: product.media,
+                        priceData: product.priceData,
+                        productData: product.productData
+                    });
+                });
+            });
 
-        for (const category of consumCategoryList) {
-            const productList: ConsumCategoryProductList = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${category.id}&offset=${0}&limit=100`)).data
-            console.log('productList', productList.totalCount)
-            await getAllProducts(productList, 100, category.id);
-        };
-
-        for (const productData of consumProductList) {
-            const product = new Product();
-            product.name = productData.productData.name;
-            product.description = productData.productData.description;
-            product.img = productData.productData?.imageURL ?? productData.media[0]?.url;
-            product.price = productData.priceData.prices.find(price => price.id === ID.Price).value.centAmount;
-            product.supermarket = 'consum';
-            this.productService.save(product);
-        }
+            for (const productData of consumProductList) {
+                const product = new Product();
+                product.name = productData.productData.name;
+                product.description = productData.productData.description;
+                product.img = productData.productData?.imageURL ?? productData.media[0]?.url;
+                product.price = productData.priceData.prices.find(price => price.id === ID.Price).value.centAmount;
+                product.supermarket = 'consum';
+                this.productService.save(product);
+            }
         } catch (error) {
             if (error instanceof AxiosError) console.log(error.message)
         }
-        
+
     }
 }
