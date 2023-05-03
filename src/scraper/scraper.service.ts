@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import Product from 'src/products/product.schema';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ProductService } from 'src/products/product.service';
 import { Category, CategoryResponse, Result, CategoryData, ProductDataMercadona } from './interfaces/mercadona'
 import { ConsumCategory, ConsumCategoryProductList, ID, ProductDataConsum } from './interfaces/consum';
@@ -26,7 +26,7 @@ export class ScraperService {
         });
 
         // Get All the info about all categories
-        const categoriesPromise: Array<Promise<CategoryData>> = mercadonaCategoryList.map(async (category: Category) => {
+        const categoriesPromise: Promise<CategoryData>[] = mercadonaCategoryList.map(async (category: Category) => {
             return (await axios.get(`https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`)).data;
         });
 
@@ -41,6 +41,7 @@ export class ScraperService {
                     product.price = productData.price_instructions.unit_price;
                     product.img = productData.thumbnail;
                     product.description = "";
+                    product.supermarket = 'mercadona';
                     mercadonaProductList.push(product);
                 });
             });
@@ -52,7 +53,8 @@ export class ScraperService {
     }
 
     async postConsumProducts(): Promise<void> {
-        const consumCategoryList: ConsumCategory[] = [];
+        try {
+            const consumCategoryList: ConsumCategory[] = [];
         let consumProductList: ProductDataConsum[] = [];
 
         const categoriesData: ConsumCategory[] = (await axios.get('https://tienda.consum.es/api/rest/V1.0/shopping/category/menu')).data;
@@ -75,21 +77,28 @@ export class ScraperService {
             consumProductList = [...consumProductList, ...productList.products];
             count = count + 100;
             const pageData: ConsumCategoryProductList = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${categoryId}&offset=${count}&limit=100`)).data
+            console.log('pagedata', pageData.totalCount)
             await getAllProducts(pageData, count, categoryId);
         }
 
         for (const category of consumCategoryList) {
             const productList: ConsumCategoryProductList = (await axios.get(`https://tienda.consum.es/api/rest/V1.0/catalog/product?categories=${category.id}&offset=${0}&limit=100`)).data
+            console.log('productList', productList.totalCount)
             await getAllProducts(productList, 100, category.id);
         };
 
         for (const productData of consumProductList) {
             const product = new Product();
-                product.name = productData.productData.name;
-                product.description = productData.productData.description;
-                product.img = productData.productData?.imageURL ?? productData.media[0]?.url;
-                product.price = productData.priceData.prices.find(price => price.id === ID.Price).value.centAmount;
+            product.name = productData.productData.name;
+            product.description = productData.productData.description;
+            product.img = productData.productData?.imageURL ?? productData.media[0]?.url;
+            product.price = productData.priceData.prices.find(price => price.id === ID.Price).value.centAmount;
+            product.supermarket = 'consum';
             this.productService.save(product);
         }
+        } catch (error) {
+            if (error instanceof AxiosError) console.log(error.message)
+        }
+        
     }
 }
