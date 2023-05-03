@@ -17,10 +17,10 @@ export interface CategoryData {
     id: number
     name: string
     categories?: CategoryData[]
-    products?: ProductData[]
+    products?: ProductDataMercadona[]
 }
 
-export interface ProductData {
+export interface ProductDataMercadona {
     id: string
     thumbnail: string
     display_name: string
