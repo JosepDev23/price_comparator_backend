@@ -8,7 +8,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Products service')
-    .setDescription('Service to do CRUD operations with the Product entity')
+    .setDescription(
+      'Our fantastic service to do CRUD operations with the Product entity',
+    )
     .setVersion('0.1')
     .build()
   const document = SwaggerModule.createDocument(app, config)
