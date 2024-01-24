@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 
 import Product from 'src/products/product.schema';
 import axios, { AxiosError } from 'axios';
 import { ProductService } from 'src/products/product.service';
 import { Category, CategoryResponse, Result, CategoryData, ProductDataMercadona } from './interfaces/mercadona'
 import { ConsumCategory, ConsumCategoryProductList, ID, ProductDataConsum } from './interfaces/consum';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ScraperService {
@@ -26,11 +25,12 @@ export class ScraperService {
         });
 
         // Get All the info about all categories
-        const categoriesPromise: Promise<CategoryData>[] = mercadonaCategoryList.map(async (category: Category) => {
-            return (await axios.get(`https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`)).data;
-        });
+        const categories: CategoryData[] = []; 
 
-        const categories: CategoryData[] = await Promise.all(categoriesPromise);
+	for (const category of mercadonaCategoryList) {
+	    let data = (await axios.get(`https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`)).data as CategoryData;
+	    categories.push(data);
+	}
 
         // Fill the array with products
         categories.forEach((data: CategoryData) => {
