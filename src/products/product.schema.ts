@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Document } from 'mongoose'
-import SemanticEnum from 'src/semantic/interfaces/semantic.enum'
+import SemanticEnum from 'src/semantic/models/semantic.enum'
 
 export type Supermarket = 'consum' | 'mercadona'
 

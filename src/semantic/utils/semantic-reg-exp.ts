@@ -1,7 +1,7 @@
-import SemanticEnum from './semantic.enum'
+import SemanticEnum from '../models/semantic.enum'
 
 const SemanticRegExp: Record<SemanticEnum, RegExp> = {
   [SemanticEnum.AGUA]: /agua/i,
-  [SemanticEnum.SAL]: /sal/i,
+  [SemanticEnum.SAL_Y_ESPECIAS]: /\bsal\b/i,
 }
 export default SemanticRegExp

@@ -1,5 +1,5 @@
 enum SemanticEnum {
   AGUA = 'agua',
-  SAL = 'sal',
+  SAL_Y_ESPECIAS = 'sal y especias',
 }
 export default SemanticEnum

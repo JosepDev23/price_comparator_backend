@@ -17,10 +17,14 @@ import {
   ID,
   ProductDataConsum,
 } from './interfaces/consum'
+import { SemanticService } from 'src/semantic/semantic.service'
 
 @Injectable()
 export class ScraperService {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly semanticService: SemanticService,
+  ) {}
 
   async postMercadonaProducts(): Promise<void> {
     const mercadonaCategoryList: Category[] = []
@@ -70,7 +74,7 @@ export class ScraperService {
 
     await Promise.all(
       mercadonaProductList.map(async (product) => {
-        this.productService.save(product)
+        this.productService.save(this.semanticService.assignSemantic(product))
       }),
     )
   }
@@ -126,7 +130,7 @@ export class ScraperService {
           (price) => price.id === ID.Price,
         ).value.centAmount
         product.supermarket = 'consum'
-        this.productService.save(product)
+        this.productService.save(this.semanticService.assignSemantic(product))
       }
     } catch (error) {
       if (error instanceof AxiosError) console.log(error.message)
