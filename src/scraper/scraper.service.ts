@@ -5,10 +5,10 @@ import Product from 'src/products/product.schema'
 import axios, { AxiosError } from 'axios'
 import { ProductService } from 'src/products/product.service'
 import {
-  Category,
-  CategoryResponse,
-  Result,
-  CategoryData,
+  CategoryMercadona,
+  CategoryResponseMercadona,
+  ResultMercadona,
+  CategoryDataMercadona,
   ProductDataMercadona,
 } from './interfaces/mercadona'
 import {
@@ -17,27 +17,26 @@ import {
   ID,
   ProductDataConsum,
 } from './interfaces/consum'
-import { SemanticService } from 'src/semantic/semantic.service'
+import { CategoryService } from 'src/categories/category.service'
+import { MercadonaCategoriesException } from './exceptions/mercadona-categories-exception'
 
 @Injectable()
 export class ScraperService {
   constructor(
     private readonly productService: ProductService,
-    private readonly semanticService: SemanticService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async postMercadonaProducts(): Promise<void> {
-    const mercadonaCategoryList: Category[] = []
+    const mercadonaCategoryList: CategoryMercadona[] = []
     const mercadonaProductList: Product[] = []
 
-    // Get the full list of categories
-    const categoriesJSON: CategoryResponse = (
-      await axios.get('https://tienda.mercadona.es/api/categories/')
-    ).data
+    const categoriesJSON: CategoryResponseMercadona =
+      await this.getMercadonaCategories()
 
-    categoriesJSON.results.forEach((upperCategory: Result) => {
-      upperCategory.categories?.forEach((lowerCategory: Result) => {
-        const category: Category = {
+    categoriesJSON.results.forEach((upperCategory: ResultMercadona) => {
+      upperCategory.categories?.forEach((lowerCategory: ResultMercadona) => {
+        const category: CategoryMercadona = {
           id: lowerCategory.id,
           name: lowerCategory.name,
         }
@@ -45,38 +44,44 @@ export class ScraperService {
       })
     })
 
-    // Get All the info about all categories
-    const categoriesPromise: Promise<CategoryData>[] =
-      mercadonaCategoryList.map(async (category: Category) => {
-        return (
+    for (let i = 0; i < mercadonaCategoryList.length; i++) {
+      // Timeout to avoid 429
+      setTimeout(async () => {
+        // Retrieve category list
+        const category = mercadonaCategoryList[i]
+        let data = (
           await axios.get(
             `https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`,
           )
-        ).data
-      })
+        ).data as CategoryDataMercadona
+        // Iterate over categories to save products
+        data.categories?.forEach((subCategory: CategoryDataMercadona) => {
+          subCategory.products?.forEach((productData: ProductDataMercadona) => {
+            const product = new Product()
+            product.name = productData.display_name
+            product.price = productData.price_instructions.unit_price
+            product.img = productData.thumbnail
+            product.description = ''
+            product.supermarket = 'mercadona'
+            product.category = this.categoryService.mapFromMercadona(data.id)
+            mercadonaProductList.push(product)
 
-    const categories: CategoryData[] = await Promise.all(categoriesPromise)
-
-    // Fill the array with products
-    categories.forEach((data: CategoryData) => {
-      data.categories?.forEach((subCategory: CategoryData) => {
-        subCategory.products?.forEach((productData: ProductDataMercadona) => {
-          const product = new Product()
-          product.name = productData.display_name
-          product.price = productData.price_instructions.unit_price
-          product.img = productData.thumbnail
-          product.description = ''
-          product.supermarket = 'mercadona'
-          mercadonaProductList.push(product)
+            this.productService.save(product)
+          })
         })
-      })
-    })
+      }, i * 100)
+    }
+  }
 
-    await Promise.all(
-      mercadonaProductList.map(async (product) => {
-        this.productService.save(this.semanticService.assignSemantic(product))
-      }),
-    )
+  private async getMercadonaCategories(): Promise<CategoryResponseMercadona> {
+    try {
+      const data = (
+        await axios.get('https://tienda.mercadona.es/api/categories/')
+      ).data
+      return data
+    } catch (error) {
+      throw new MercadonaCategoriesException()
+    }
   }
 
   async postConsumProducts(): Promise<void> {
@@ -130,7 +135,7 @@ export class ScraperService {
           (price) => price.id === ID.Price,
         ).value.centAmount
         product.supermarket = 'consum'
-        this.productService.save(this.semanticService.assignSemantic(product))
+        this.productService.save(product)
       }
     } catch (error) {
       if (error instanceof AxiosError) console.log(error.message)

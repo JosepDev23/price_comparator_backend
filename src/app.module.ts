@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { ProductModule } from './products/product.module'
 import { ScraperModule } from './scraper/scraper.module'
-import { SemanticModule } from './semantic/semantic.module'
 
 @Module({
   imports: [
@@ -12,7 +11,6 @@ import { SemanticModule } from './semantic/semantic.module'
     SwaggerModule,
     ProductModule,
     ScraperModule,
-    SemanticModule,
   ],
 })
 export class AppModule {}

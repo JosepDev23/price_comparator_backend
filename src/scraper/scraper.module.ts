@@ -6,7 +6,7 @@ import { ScraperService } from './scraper.service'
 import { ScraperController } from './scraper.controller'
 import { ProductService } from 'src/products/product.service'
 import Product, { ProductSchema } from 'src/products/product.schema'
-import { SemanticService } from 'src/semantic/semantic.service'
+import { CategoryService } from 'src/categories/category.service'
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { SemanticService } from 'src/semantic/semantic.service'
       },
     ]),
   ],
-  providers: [ScraperService, ProductService, SemanticService],
+  providers: [ScraperService, ProductService, CategoryService],
   controllers: [ScraperController],
 })
 export class ScraperModule {}

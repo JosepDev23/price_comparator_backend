@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Document } from 'mongoose'
-import SemanticEnum from 'src/semantic/models/semantic.enum'
+import { Category } from 'src/categories/category.enum'
 
 export type Supermarket = 'consum' | 'mercadona'
 
@@ -31,7 +31,7 @@ export default class Product {
 
   @Prop()
   @ApiPropertyOptional()
-  semantic: SemanticEnum[]
+  category: Category
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product)
