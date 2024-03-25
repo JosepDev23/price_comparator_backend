@@ -1,33 +1,37 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Document } from 'mongoose'
+import { Category } from 'src/categories/category.enum'
 
-export type Supermarket = 'consum' | 'mercadona';
+export type Supermarket = 'consum' | 'mercadona'
 
-export type ProductDocument = Product & Document;
+export type ProductDocument = Product & Document
 
 @Schema()
 export default class Product {
+  @Prop()
+  @ApiProperty()
+  name: string
 
   @Prop()
   @ApiProperty()
-  name: string;
+  description: string
 
   @Prop()
   @ApiProperty()
-  description: string;
+  price: number
 
   @Prop()
   @ApiProperty()
-  price: number;
+  img: string
 
   @Prop()
   @ApiProperty()
-  img: string;
+  supermarket: Supermarket
 
   @Prop()
-  @ApiProperty()
-  supermarket: Supermarket;
+  @ApiPropertyOptional()
+  category: Category
 }
 
-export const ProductSchema = SchemaFactory.createForClass(Product);
+export const ProductSchema = SchemaFactory.createForClass(Product)

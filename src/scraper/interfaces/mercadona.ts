@@ -1,32 +1,32 @@
-export interface Category {
-    id: number;
-    name: string;
+export interface CategoryMercadona {
+  id: number
+  name: string
 }
 
-export interface CategoryResponse {
-    results: Result[]
+export interface CategoryResponseMercadona {
+  results: ResultMercadona[]
 }
 
-export interface Result {
-    id: number
-    name: string
-    categories?: Result[]
+export interface ResultMercadona {
+  id: number
+  name: string
+  categories?: ResultMercadona[]
 }
 
-export interface CategoryData {
-    id: number
-    name: string
-    categories?: CategoryData[]
-    products?: ProductDataMercadona[]
+export interface CategoryDataMercadona {
+  id: number
+  name: string
+  categories?: CategoryDataMercadona[]
+  products?: ProductDataMercadona[]
 }
 
 export interface ProductDataMercadona {
-    id: string
-    thumbnail: string
-    display_name: string
-    price_instructions: PriceInstructions
+  id: string
+  thumbnail: string
+  display_name: string
+  price_instructions: PriceInstructionsMercadona
 }
 
-export interface PriceInstructions {
-    unit_price: number
+export interface PriceInstructionsMercadona {
+  unit_price: number
 }

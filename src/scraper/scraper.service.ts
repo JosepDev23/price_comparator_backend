@@ -1,11 +1,14 @@
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+
 import Product from 'src/products/product.schema'
 import axios, { AxiosError } from 'axios'
 import { ProductService } from 'src/products/product.service'
 import {
-  Category,
-  CategoryResponse,
-  Result,
-  CategoryData,
+  CategoryMercadona,
+  CategoryResponseMercadona,
+  ResultMercadona,
+  CategoryDataMercadona,
   ProductDataMercadona,
 } from './interfaces/mercadona'
 import {
@@ -14,24 +17,26 @@ import {
   ID,
   ProductDataConsum,
 } from './interfaces/consum'
-import { Injectable } from '@nestjs/common'
+import { CategoryService } from 'src/categories/category.service'
+import { MercadonaCategoriesException } from './exceptions/mercadona-categories-exception'
 
 @Injectable()
 export class ScraperService {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly categoryService: CategoryService,
+  ) {}
 
   async postMercadonaProducts(): Promise<void> {
-    const mercadonaCategoryList: Category[] = []
+    const mercadonaCategoryList: CategoryMercadona[] = []
     const mercadonaProductList: Product[] = []
 
-    // Get the full list of categories
-    const categoriesJSON: CategoryResponse = (
-      await axios.get('https://tienda.mercadona.es/api/categories/')
-    ).data
+    const categoriesJSON: CategoryResponseMercadona =
+      await this.getMercadonaCategories()
 
-    categoriesJSON.results.forEach((upperCategory: Result) => {
-      upperCategory.categories?.forEach((lowerCategory: Result) => {
-        const category: Category = {
+    categoriesJSON.results.forEach((upperCategory: ResultMercadona) => {
+      upperCategory.categories?.forEach((lowerCategory: ResultMercadona) => {
+        const category: CategoryMercadona = {
           id: lowerCategory.id,
           name: lowerCategory.name,
         }
@@ -48,9 +53,9 @@ export class ScraperService {
           await axios.get(
             `https://tienda.mercadona.es/api/categories/${category.id}/?lang=es`,
           )
-        ).data as CategoryData
+        ).data as CategoryDataMercadona
         // Iterate over categories to save products
-        data.categories?.forEach((subCategory: CategoryData) => {
+        data.categories?.forEach((subCategory: CategoryDataMercadona) => {
           subCategory.products?.forEach((productData: ProductDataMercadona) => {
             const product = new Product()
             product.name = productData.display_name
@@ -58,12 +63,24 @@ export class ScraperService {
             product.img = productData.thumbnail
             product.description = ''
             product.supermarket = 'mercadona'
+            product.category = this.categoryService.mapFromMercadona(data.id)
             mercadonaProductList.push(product)
 
             this.productService.save(product)
           })
         })
       }, i * 100)
+    }
+  }
+
+  private async getMercadonaCategories(): Promise<CategoryResponseMercadona> {
+    try {
+      const data = (
+        await axios.get('https://tienda.mercadona.es/api/categories/')
+      ).data
+      return data
+    } catch (error) {
+      throw new MercadonaCategoriesException()
     }
   }
 
